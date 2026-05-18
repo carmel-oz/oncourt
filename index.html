@@ -14,7 +14,10 @@
       <header class="topbar">
         <div class="brand-lockup">
           <div>
-            <p class="eyebrow">Roland-Garros</p>
+            <div class="year-switch" role="tablist" aria-label="Tournament year">
+              <button class="year-tab" data-year="2025" type="button">Roland-Garros 2025</button>
+              <button class="year-tab active" data-year="2026" type="button">Roland-Garros 2026</button>
+            </div>
             <img class="wordmark-image" src="assets/oncourt2-cropped.png" alt="OnCourt" />
           </div>
         </div>
@@ -77,6 +80,7 @@
       </main>
     </div>
 
+    <script src="data/rg2025.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

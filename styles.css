@@ -67,6 +67,32 @@ button {
   min-width: 0;
 }
 
+.year-switch {
+  display: grid;
+  gap: 6px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-bottom: 7px;
+  width: min(360px, 72vw);
+}
+
+.year-tab {
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  min-height: 30px;
+  padding: 0 8px;
+  text-transform: uppercase;
+}
+
+.year-tab.active {
+  background: var(--clay);
+  border-color: var(--clay);
+  color: #101416;
+}
+
 h1,
 h2,
 h3,
@@ -269,6 +295,25 @@ h3 {
   position: relative;
   vertical-align: -1px;
   width: 22px;
+}
+
+.flag-img {
+  border: 1px solid rgba(245, 239, 229, 0.28);
+  border-radius: 2px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.22);
+  display: inline-block;
+  flex: 0 0 auto;
+  height: 14px;
+  margin-right: 8px;
+  object-fit: cover;
+  vertical-align: -1px;
+  width: 22px;
+}
+
+.flag .flag-img {
+  height: 16px;
+  margin-right: 0;
+  width: 24px;
 }
 
 .flag .flag-icon {

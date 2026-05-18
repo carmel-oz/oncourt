@@ -1,4 +1,4 @@
-const players = [
+const players2026 = [
   { id: "alcaraz", draw: "men", name: "Carlos Alcaraz", country: "Spain", code: "ES", seed: 1 },
   { id: "sinner", draw: "men", name: "Jannik Sinner", country: "Italy", code: "IT", seed: 2 },
   { id: "djokovic", draw: "men", name: "Novak Djokovic", country: "Serbia", code: "RS", seed: 3 },
@@ -17,7 +17,7 @@ const players = [
   { id: "sakkari", draw: "women", name: "Maria Sakkari", country: "Greece", code: "GR", seed: 8 }
 ];
 
-const matches = [
+const matches2026 = [
   {
     id: "m1",
     draw: "women",
@@ -77,8 +77,7 @@ const matches = [
     playerA: "djokovic",
     playerB: "zverev",
     scoreA: "6 7 6",
-    scoreB: "4 5 3",
-    winner: "djokovic"
+    scoreB: "4 5 3"
   },
   {
     id: "m6",
@@ -90,8 +89,7 @@ const matches = [
     playerA: "sabalenka",
     playerB: "rybakina",
     scoreA: "4 6 6",
-    scoreB: "6 3 4",
-    winner: "sabalenka"
+    scoreB: "6 3 4"
   },
   {
     id: "m7",
@@ -119,47 +117,101 @@ const matches = [
   }
 ];
 
+const tournaments = {
+  2025: {
+    label: "Roland-Garros 2025",
+    realData: true,
+    players: (window.RG_2025_DATA && window.RG_2025_DATA.players) || [],
+    matches: (window.RG_2025_DATA && window.RG_2025_DATA.matches) || []
+  },
+  2026: {
+    label: "Roland-Garros 2026",
+    realData: false,
+    players: players2026,
+    matches: matches2026
+  }
+};
+
 const state = {
+  year: "2026",
   draw: "men",
   matchFilter: "all",
   search: "",
-  followed: new Set(JSON.parse(localStorage.getItem("rg-followed") || "[]"))
+  followed: loadFollows("2026")
 };
 
 const els = {
   followSummary: document.querySelector("#followSummary"),
+  briefingTitle: document.querySelector("#briefingTitle"),
   briefingText: document.querySelector("#briefingText"),
   radarTitle: document.querySelector("#radarTitle"),
   radarText: document.querySelector("#radarText"),
   playerSearch: document.querySelector("#playerSearch"),
+  playersTitle: document.querySelector("#playersTitle"),
+  feedTitle: document.querySelector("#feedTitle"),
   playerList: document.querySelector("#playerList"),
   matchList: document.querySelector("#matchList"),
   clearFollows: document.querySelector("#clearFollows")
 };
 
+function loadFollows(year) {
+  return new Set(JSON.parse(localStorage.getItem(`oncourt-followed-${year}`) || "[]"));
+}
+
+function currentTournament() {
+  return tournaments[state.year];
+}
+
+function currentPlayers() {
+  return currentTournament().players;
+}
+
+function currentMatches() {
+  return currentTournament().matches;
+}
+
+function playerIdForMatch(match, side) {
+  const value = match[`player${side}`];
+  if (String(state.year) === "2025") {
+    return `${match.draw}:${value}`;
+  }
+  return value;
+}
+
 function flagMarkup(code) {
+  if (!code) return `<span class="flag-icon flag-un" aria-hidden="true"></span>`;
+  if (code.length === 3) {
+    return `<img class="flag-img" src="https://www.rolandgarros.com/img/flags-svg/${code}.svg" alt="" aria-hidden="true" />`;
+  }
   return `<span class="flag-icon flag-${code.toLowerCase()}" aria-hidden="true"></span>`;
 }
 
 function getPlayer(id) {
-  return players.find(player => player.id === id);
+  return currentPlayers().find(player => player.id === id);
 }
 
 function isFollowedMatch(match) {
-  return state.followed.has(match.playerA) || state.followed.has(match.playerB);
+  return state.followed.has(playerIdForMatch(match, "A")) || state.followed.has(playerIdForMatch(match, "B"));
 }
 
 function saveFollows() {
-  localStorage.setItem("rg-followed", JSON.stringify([...state.followed]));
+  localStorage.setItem(`oncourt-followed-${state.year}`, JSON.stringify([...state.followed]));
+}
+
+function playerSub(player) {
+  const seed = player.seed ? `Seed ${player.seed}` : "Unseeded";
+  return `${seed} · ${player.country || "Country unavailable"}`;
 }
 
 function renderPlayers() {
   const search = state.search.trim().toLowerCase();
-  const visiblePlayers = players.filter(player => {
+  const visiblePlayers = currentPlayers().filter(player => {
     const matchesDraw = player.draw === state.draw;
     const matchesSearch = !search || `${player.name} ${player.country}`.toLowerCase().includes(search);
     return matchesDraw && matchesSearch;
   });
+
+  els.playersTitle.textContent = `${state.year} favorites`;
 
   els.playerList.innerHTML = visiblePlayers
     .map(player => {
@@ -169,7 +221,7 @@ function renderPlayers() {
           <div class="flag">${flagMarkup(player.code)}</div>
           <div class="player-meta">
             <div class="player-name">${player.name}</div>
-            <div class="player-sub">Seed ${player.seed} · ${player.country}</div>
+            <div class="player-sub">${playerSub(player)}</div>
           </div>
           <button class="follow-button ${active ? "active" : ""}" type="button" data-player="${player.id}" aria-label="${active ? "Unfollow" : "Follow"} ${player.name}">
             <img class="tennis-ball" src="assets/tennis-ball.jfif" alt="" aria-hidden="true" />
@@ -187,9 +239,12 @@ function matchStatusLabel(status) {
 }
 
 function renderMatches() {
-  const followedMatches = matches.filter(isFollowedMatch);
-  const source = state.followed.size ? followedMatches : matches;
+  const allMatches = currentMatches();
+  const followedMatches = allMatches.filter(isFollowedMatch);
+  const source = state.followed.size ? followedMatches : allMatches;
   const visibleMatches = source.filter(match => state.matchFilter === "all" || match.status === state.matchFilter);
+
+  els.feedTitle.textContent = `${currentTournament().label} matches`;
 
   if (!visibleMatches.length) {
     els.matchList.innerHTML = `<div class="empty-state">No matches in this view yet. Try another tab or follow more players.</div>`;
@@ -198,10 +253,12 @@ function renderMatches() {
 
   els.matchList.innerHTML = visibleMatches
     .map(match => {
-      const playerA = getPlayer(match.playerA);
-      const playerB = getPlayer(match.playerB);
+      const playerA = getPlayer(playerIdForMatch(match, "A"));
+      const playerB = getPlayer(playerIdForMatch(match, "B"));
+      if (!playerA || !playerB) return "";
       const scoreA = match.scoreA || "Not started";
       const scoreB = match.scoreB || "";
+      const duration = match.duration ? ` · ${match.duration}` : "";
       return `
         <article class="match-card">
           <div class="match-top">
@@ -209,7 +266,7 @@ function renderMatches() {
               <span class="round">${match.round}</span>
               <span class="status ${match.status}">${matchStatusLabel(match.status)}</span>
             </div>
-            <div class="match-meta">${match.time}</div>
+            <div class="match-meta">${match.time}${duration}</div>
           </div>
           <div>
             <div class="score-row">
@@ -229,13 +286,31 @@ function renderMatches() {
 }
 
 function renderBriefing() {
-  const followedPlayers = players.filter(player => state.followed.has(player.id));
-  const liveCount = matches.filter(match => match.status === "live" && isFollowedMatch(match)).length;
-  const nextMatches = matches.filter(match => match.status === "future" && isFollowedMatch(match));
-  const pastCount = matches.filter(match => match.status === "past" && isFollowedMatch(match)).length;
+  const allMatches = currentMatches();
+  const followedPlayers = currentPlayers().filter(player => state.followed.has(player.id));
+  const liveCount = allMatches.filter(match => match.status === "live" && isFollowedMatch(match)).length;
+  const nextMatches = allMatches.filter(match => match.status === "future" && isFollowedMatch(match));
+  const pastCount = allMatches.filter(match => match.status === "past" && isFollowedMatch(match)).length;
 
   els.followSummary.textContent = `${state.followed.size} followed`;
 
+  if (String(state.year) === "2025") {
+    els.briefingTitle.textContent = "2025 tournament archive";
+    if (!followedPlayers.length) {
+      els.briefingText.textContent = `Browse ${currentPlayers().length} real 2025 singles players and ${allMatches.length} completed matches from Roland-Garros. Follow a player to filter the archive.`;
+      els.radarTitle.textContent = "Completed tournament";
+      els.radarText.textContent = "No live or upcoming matches here. This tab is a finished-results archive.";
+      return;
+    }
+    const names = followedPlayers.slice(0, 3).map(player => player.name).join(", ");
+    const more = followedPlayers.length > 3 ? ` and ${followedPlayers.length - 3} more` : "";
+    els.briefingText.textContent = `You follow ${names}${more}. Showing ${pastCount} completed 2025 matches for your players.`;
+    els.radarTitle.textContent = `${pastCount} archive matches`;
+    els.radarText.textContent = "Use All or Past to review their completed Roland-Garros 2025 run.";
+    return;
+  }
+
+  els.briefingTitle.textContent = "Your personal tournament desk";
   if (!followedPlayers.length) {
     els.briefingText.textContent = "Choose players from the men and women lists. Your schedule, live scores, and finished results will appear here.";
     els.radarTitle.textContent = "No followed matches yet";
@@ -252,8 +327,8 @@ function renderBriefing() {
     els.radarText.textContent = "One of your players is currently on court. The live card is at the top of your feed.";
   } else if (nextMatches.length) {
     const next = nextMatches[0];
-    const playerA = getPlayer(next.playerA).name;
-    const playerB = getPlayer(next.playerB).name;
+    const playerA = getPlayer(playerIdForMatch(next, "A")).name;
+    const playerB = getPlayer(playerIdForMatch(next, "B")).name;
     els.radarTitle.textContent = next.time;
     els.radarText.textContent = `${playerA} vs ${playerB} on ${next.court}.`;
   } else {
@@ -267,6 +342,17 @@ function render() {
   renderMatches();
   renderBriefing();
 }
+
+document.querySelectorAll(".year-tab").forEach(button => {
+  button.addEventListener("click", () => {
+    state.year = button.dataset.year;
+    state.followed = loadFollows(state.year);
+    state.matchFilter = "all";
+    document.querySelectorAll(".year-tab").forEach(item => item.classList.toggle("active", item === button));
+    document.querySelectorAll(".feed-tab").forEach(item => item.classList.toggle("active", item.dataset.filter === "all"));
+    render();
+  });
+});
 
 document.querySelectorAll(".segment").forEach(button => {
   button.addEventListener("click", () => {
