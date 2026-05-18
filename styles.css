@@ -489,9 +489,18 @@ h3 {
   color: var(--green);
 }
 
-.score-row {
-  gap: 12px;
-  justify-content: space-between;
+.scoreboard {
+  align-items: end;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.competitors {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding-bottom: 1px;
 }
 
 .competitor {
@@ -500,19 +509,72 @@ h3 {
   display: flex;
   font-family: var(--score-font);
   font-size: 20px;
-  min-width: 0;
   flex: 1;
   font-weight: 800;
   line-height: 1.15;
+  min-height: 26px;
+  min-width: 0;
   text-transform: uppercase;
 }
 
-.score {
+.score-grid {
+  display: grid;
+  gap: 3px;
+  grid-template-rows: 14px repeat(2, 26px);
+  min-width: max-content;
+}
+
+.set-header,
+.set-row {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(var(--set-count), 24px);
+  justify-content: end;
+}
+
+.set-header {
+  align-items: center;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.set-row {
+  align-items: center;
+}
+
+.set-score,
+.score-empty {
   color: var(--gold);
   font-family: var(--score-font);
   font-size: 20px;
   font-weight: 800;
+  position: relative;
+  text-align: center;
   white-space: nowrap;
+}
+
+.set-score small {
+  color: #f0d899;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+  position: absolute;
+  right: -4px;
+  top: -4px;
+}
+
+.pending-score {
+  align-items: end;
+  display: flex;
+  grid-template-rows: none;
+  min-height: 55px;
+}
+
+.score-empty {
+  color: var(--muted);
+  font-size: 14px;
 }
 
 .server-dot {

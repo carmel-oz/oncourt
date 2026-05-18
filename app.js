@@ -238,6 +238,81 @@ function matchStatusLabel(status) {
   return "Live";
 }
 
+function scoreTokens(score) {
+  return String(score || "")
+    .split(/\s+/)
+    .filter(Boolean)
+    .map(token => token.replace(".", ""));
+}
+
+function parseScoreSets(match) {
+  const aTokens = scoreTokens(match.scoreA);
+  const bTokens = scoreTokens(match.scoreB);
+  const aStatus = aTokens.find(token => Number.isNaN(Number(token)));
+  const bStatus = bTokens.find(token => Number.isNaN(Number(token)));
+  const aScores = aTokens.filter(token => !Number.isNaN(Number(token))).map(Number);
+  const bScores = bTokens.filter(token => !Number.isNaN(Number(token))).map(Number);
+  const sets = [];
+  let index = 0;
+
+  while (index < aScores.length && index < bScores.length) {
+    const a = aScores[index];
+    const b = bScores[index];
+    const set = { a, b };
+    const nextA = aScores[index + 1];
+    const nextB = bScores[index + 1];
+    const isTiebreakSet = (a === 7 && b === 6) || (a === 6 && b === 7);
+    const hasTiebreakPair = Number.isFinite(nextA) && Number.isFinite(nextB) && Math.max(nextA, nextB) >= 7;
+
+    if (isTiebreakSet && hasTiebreakPair) {
+      set.tiebreakA = nextA;
+      set.tiebreakB = nextB;
+      index += 2;
+    } else {
+      index += 1;
+    }
+
+    sets.push(set);
+  }
+
+  return { sets, aStatus, bStatus };
+}
+
+function renderScoreGrid(match) {
+  const parsed = parseScoreSets(match);
+
+  if (!parsed.sets.length) {
+    return `
+      <div class="score-grid pending-score">
+        <div class="score-empty">Not started</div>
+      </div>
+    `;
+  }
+
+  const headers = parsed.sets.map((_, index) => `<span>${index + 1}</span>`).join("");
+  const row = side =>
+    parsed.sets
+      .map(set => {
+        const main = side === "a" ? set.a : set.b;
+        const tiebreak = side === "a" ? set.tiebreakA : set.tiebreakB;
+        return `
+          <span class="set-score">
+            ${main}
+            ${Number.isFinite(tiebreak) ? `<small>${tiebreak}</small>` : ""}
+          </span>
+        `;
+      })
+      .join("");
+
+  return `
+    <div class="score-grid" style="--set-count: ${parsed.sets.length}">
+      <div class="set-header">${headers}</div>
+      <div class="set-row">${row("a")}</div>
+      <div class="set-row">${row("b")}</div>
+    </div>
+  `;
+}
+
 function renderMatches() {
   const allMatches = currentMatches();
   const followedMatches = allMatches.filter(isFollowedMatch);
@@ -256,9 +331,8 @@ function renderMatches() {
       const playerA = getPlayer(playerIdForMatch(match, "A"));
       const playerB = getPlayer(playerIdForMatch(match, "B"));
       if (!playerA || !playerB) return "";
-      const scoreA = match.scoreA || "Not started";
-      const scoreB = match.scoreB || "";
       const duration = match.duration ? ` · ${match.duration}` : "";
+      const scoreGrid = renderScoreGrid(match);
       return `
         <article class="match-card">
           <div class="match-top">
@@ -268,15 +342,12 @@ function renderMatches() {
             </div>
             <div class="match-meta">${match.time}${duration}</div>
           </div>
-          <div>
-            <div class="score-row">
+          <div class="scoreboard">
+            <div class="competitors">
               <div class="competitor">${match.server === playerA.id ? '<span class="server-dot"></span>' : ""}${flagMarkup(playerA.code)} ${playerA.name}</div>
-              <div class="score">${scoreA}</div>
-            </div>
-            <div class="score-row">
               <div class="competitor">${match.server === playerB.id ? '<span class="server-dot"></span>' : ""}${flagMarkup(playerB.code)} ${playerB.name}</div>
-              <div class="score">${scoreB}</div>
             </div>
+            ${scoreGrid}
           </div>
           <div class="court">${match.court}</div>
         </article>
