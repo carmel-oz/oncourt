@@ -1,0 +1,17 @@
+{
+  "name": "OnCourt",
+  "short_name": "OnCourt",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#101416",
+  "theme_color": "#101416",
+  "description": "A simple personal tennis tracker for favorite Roland-Garros players.",
+  "icons": [
+    {
+      "src": "assets/oncourt-logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

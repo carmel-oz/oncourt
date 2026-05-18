@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f7f3eb" />
+    <title>OnCourt</title>
+    <link rel="icon" href="assets/oncourt-logo.svg" type="image/svg+xml" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand-lockup">
+          <div>
+            <p class="eyebrow">Roland-Garros</p>
+            <img class="wordmark-image" src="assets/oncourt2-cropped.png" alt="OnCourt" />
+          </div>
+        </div>
+        <div class="summary-pill" id="followSummary">0 followed</div>
+      </header>
+
+      <main>
+        <section class="briefing-band" aria-labelledby="briefingTitle">
+          <div>
+            <p class="eyebrow">Daily Fan Briefing</p>
+            <h2 id="briefingTitle">Your personal tournament desk</h2>
+            <p id="briefingText">Choose players below to build your personal feed.</p>
+          </div>
+          <div class="radar-card" aria-labelledby="radarTitle">
+            <p class="eyebrow">Match Radar</p>
+            <h3 id="radarTitle">No followed matches yet</h3>
+            <p id="radarText">Follow a player to see what is coming next.</p>
+          </div>
+        </section>
+
+        <section class="controls" aria-label="Player filters">
+          <label class="search-box">
+            <span>Search player</span>
+            <input id="playerSearch" type="search" placeholder="Name or country" autocomplete="off" />
+          </label>
+          <div class="segmented" role="tablist" aria-label="Draw selector">
+            <button class="segment active" data-draw="men" type="button">Men</button>
+            <button class="segment" data-draw="women" type="button">Women</button>
+          </div>
+        </section>
+
+        <section class="layout">
+          <aside class="player-panel" aria-labelledby="playersTitle">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Main Draw</p>
+                <h2 id="playersTitle">Choose favorites</h2>
+              </div>
+              <button class="text-button" id="clearFollows" type="button">Clear</button>
+            </div>
+            <div class="player-list" id="playerList"></div>
+          </aside>
+
+          <section class="feed-panel" aria-labelledby="feedTitle">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Personal Feed</p>
+                <h2 id="feedTitle">Matches</h2>
+              </div>
+              <div class="feed-tabs" role="tablist" aria-label="Match filter">
+                <button class="feed-tab active" data-filter="all" type="button">All</button>
+                <button class="feed-tab" data-filter="live" type="button">Live</button>
+                <button class="feed-tab" data-filter="future" type="button">Next</button>
+                <button class="feed-tab" data-filter="past" type="button">Past</button>
+              </div>
+            </div>
+            <div class="match-list" id="matchList"></div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
