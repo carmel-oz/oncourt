@@ -342,7 +342,11 @@ function parseScoreSets(match) {
     sets.push(set);
   }
 
-  return { sets, aStatus, bStatus };
+  const aSetsWon = sets.filter(set => set.a > set.b).length;
+  const bSetsWon = sets.filter(set => set.b > set.a).length;
+  const matchWinner = aSetsWon > bSetsWon ? "a" : bSetsWon > aSetsWon ? "b" : null;
+
+  return { sets, aStatus, bStatus, aSetsWon, bSetsWon, matchWinner };
 }
 
 function renderScoreGrid(match) {
@@ -362,8 +366,9 @@ function renderScoreGrid(match) {
       .map(set => {
         const main = side === "a" ? set.a : set.b;
         const tiebreak = side === "a" ? set.tiebreakA : set.tiebreakB;
+        const lostSet = side === "a" ? set.a < set.b : set.b < set.a;
         return `
-          <span class="set-score">
+          <span class="set-score ${lostSet ? "lost-set" : ""}">
             ${main}
             ${Number.isFinite(tiebreak) ? `<small>${tiebreak}</small>` : ""}
           </span>
@@ -403,7 +408,10 @@ function renderMatches() {
       const playerB = getPlayer(playerIdForMatch(match, "B"));
       if (!playerA || !playerB) return "";
       const duration = match.duration ? ` · ${match.duration}` : "";
+      const parsedScore = parseScoreSets(match);
       const scoreGrid = renderScoreGrid(match);
+      const playerALost = parsedScore.matchWinner === "b";
+      const playerBLost = parsedScore.matchWinner === "a";
       return `
         <article class="match-card">
           <div class="match-top">
@@ -415,8 +423,8 @@ function renderMatches() {
           </div>
           <div class="scoreboard">
             <div class="competitors">
-              <div class="competitor">${match.server === playerA.id ? '<span class="server-dot"></span>' : ""}${flagMarkup(playerA.code)} ${playerA.name}</div>
-              <div class="competitor">${match.server === playerB.id ? '<span class="server-dot"></span>' : ""}${flagMarkup(playerB.code)} ${playerB.name}</div>
+              <div class="competitor ${playerALost ? "lost-player" : ""}">${match.server === playerA.id ? '<span class="server-dot"></span>' : ""}${flagMarkup(playerA.code)} ${playerA.name}</div>
+              <div class="competitor ${playerBLost ? "lost-player" : ""}">${match.server === playerB.id ? '<span class="server-dot"></span>' : ""}${flagMarkup(playerB.code)} ${playerB.name}</div>
             </div>
             ${scoreGrid}
           </div>

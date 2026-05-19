@@ -518,6 +518,15 @@ h3 {
   text-transform: none;
 }
 
+.competitor.lost-player {
+  color: #7f888d;
+}
+
+.competitor.lost-player .flag-img,
+.competitor.lost-player .flag-icon {
+  opacity: 0.58;
+}
+
 .score-grid {
   display: grid;
   gap: 3px;
@@ -564,6 +573,14 @@ h3 {
   position: absolute;
   right: -4px;
   top: -4px;
+}
+
+.set-score.lost-set {
+  color: rgba(243, 196, 101, 0.42);
+}
+
+.set-score.lost-set small {
+  color: rgba(240, 216, 153, 0.42);
 }
 
 .pending-score {
