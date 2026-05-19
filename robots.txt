@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://oncourt.netlify.app/sitemap.xml
+Sitemap: https://on-court.netlify.app/sitemap.xml
