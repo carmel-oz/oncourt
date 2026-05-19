@@ -132,6 +132,56 @@ const tournaments = {
   }
 };
 
+const countryNames = {
+  "---": "Neutral",
+  ARG: "Argentina",
+  ARM: "Armenia",
+  AUS: "Australia",
+  AUT: "Austria",
+  BEL: "Belgium",
+  BIH: "Bosnia and Herzegovina",
+  BOL: "Bolivia",
+  BRA: "Brazil",
+  BUL: "Bulgaria",
+  CAN: "Canada",
+  CHI: "Chile",
+  CHN: "China",
+  COL: "Colombia",
+  CRO: "Croatia",
+  CZE: "Czech Republic",
+  DEN: "Denmark",
+  EGY: "Egypt",
+  ESP: "Spain",
+  FRA: "France",
+  GBR: "Great Britain",
+  GEO: "Georgia",
+  GER: "Germany",
+  GRE: "Greece",
+  HUN: "Hungary",
+  ITA: "Italy",
+  JPN: "Japan",
+  KAZ: "Kazakhstan",
+  LAT: "Latvia",
+  LBN: "Lebanon",
+  MEX: "Mexico",
+  NED: "Netherlands",
+  NOR: "Norway",
+  NZL: "New Zealand",
+  PHI: "Philippines",
+  POL: "Poland",
+  POR: "Portugal",
+  ROU: "Romania",
+  RSA: "South Africa",
+  SRB: "Serbia",
+  SUI: "Switzerland",
+  SVK: "Slovakia",
+  TPE: "Chinese Taipei",
+  TUN: "Tunisia",
+  TUR: "Turkey",
+  UKR: "Ukraine",
+  USA: "United States"
+};
+
 const state = {
   year: "2026",
   draw: "men",
@@ -186,6 +236,10 @@ function flagMarkup(code) {
   return `<span class="flag-icon flag-${code.toLowerCase()}" aria-hidden="true"></span>`;
 }
 
+function countryName(player) {
+  return countryNames[player.code] || player.country || "Country unavailable";
+}
+
 function getPlayer(id) {
   return currentPlayers().find(player => player.id === id);
 }
@@ -200,14 +254,18 @@ function saveFollows() {
 
 function playerSub(player) {
   const seed = player.seed ? `Seed ${player.seed}` : "Unseeded";
-  return `${seed} · ${player.country || "Country unavailable"}`;
+  return `${seed} · ${countryName(player)}`;
+}
+
+function playerSearchText(player) {
+  return `${player.name} ${player.country || ""} ${player.code || ""} ${countryName(player)}`.toLowerCase();
 }
 
 function renderPlayers() {
   const search = state.search.trim().toLowerCase();
   const visiblePlayers = currentPlayers().filter(player => {
     const matchesDraw = player.draw === state.draw;
-    const matchesSearch = !search || `${player.name} ${player.country}`.toLowerCase().includes(search);
+    const matchesSearch = !search || playerSearchText(player).includes(search);
     return matchesDraw && matchesSearch;
   });
 
