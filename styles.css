@@ -597,6 +597,25 @@ h3 {
   text-align: center;
 }
 
+.site-footer {
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 12px;
+  gap: 8px 14px;
+  justify-content: center;
+  margin-top: 22px;
+  padding: 18px 0 4px;
+  text-align: center;
+}
+
+.site-footer span:not(:last-child)::after {
+  color: rgba(169, 177, 181, 0.5);
+  content: "/";
+  margin-left: 14px;
+}
+
 @media (max-width: 860px) {
   .briefing-band,
   .controls,
@@ -640,5 +659,14 @@ h3 {
   .match-top {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .site-footer {
+    display: grid;
+    gap: 6px;
+  }
+
+  .site-footer span::after {
+    display: none;
   }
 }

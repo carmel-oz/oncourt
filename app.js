@@ -253,7 +253,7 @@ function saveFollows() {
 }
 
 function playerSub(player) {
-  const seed = player.seed ? `Seed ${player.seed}` : "Unseeded";
+  const seed = player.seed || "Unseeded";
   return `${seed} · ${countryName(player)}`;
 }
 
