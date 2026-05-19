@@ -5,7 +5,7 @@
   "display": "standalone",
   "background_color": "#101416",
   "theme_color": "#101416",
-  "description": "A simple personal tennis tracker for favorite Roland-Garros players.",
+  "description": "A free tennis fan tracker for following favorite Roland-Garros singles players, schedules, live scores and results.",
   "icons": [
     {
       "src": "assets/oncourt-logo.svg",
