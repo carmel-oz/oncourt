@@ -374,13 +374,17 @@ function renderScoreGrid(match) {
 function renderMatches() {
   const allMatches = currentMatches();
   const followedMatches = allMatches.filter(isFollowedMatch);
-  const source = state.followed.size ? followedMatches : allMatches;
-  const visibleMatches = source.filter(match => state.matchFilter === "all" || match.status === state.matchFilter);
+  const visibleMatches = state.followed.size
+    ? followedMatches.filter(match => state.matchFilter === "all" || match.status === state.matchFilter)
+    : [];
 
   els.feedTitle.textContent = `${currentTournament().label} matches`;
 
   if (!visibleMatches.length) {
-    els.matchList.innerHTML = `<div class="empty-state">No matches in this view yet. Try another tab or follow more players.</div>`;
+    const emptyText = state.followed.size
+      ? "No matches in this view yet. Try another tab or follow more players."
+      : "No favorites selected yet. Pick players from the list to build your personal match feed.";
+    els.matchList.innerHTML = `<div class="empty-state">${emptyText}</div>`;
     return;
   }
 
@@ -443,7 +447,7 @@ function renderBriefing() {
   if (!followedPlayers.length) {
     els.briefingText.textContent = "Choose players from the men and women lists. Your schedule, live scores, and finished results will appear here.";
     els.radarTitle.textContent = "No followed matches yet";
-    els.radarText.textContent = "The app is showing featured sample matches until you follow someone.";
+    els.radarText.textContent = "Your feed stays empty until you choose favorites.";
     return;
   }
 
