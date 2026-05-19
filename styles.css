@@ -616,6 +616,16 @@ h3 {
   margin-left: 14px;
 }
 
+.site-footer a {
+  color: #d7e7ef;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.site-footer a:hover {
+  color: var(--clay-strong);
+}
+
 @media (max-width: 860px) {
   .briefing-band,
   .controls,
