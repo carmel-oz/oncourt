@@ -261,13 +261,22 @@ function playerSearchText(player) {
   return `${player.name} ${player.country || ""} ${player.code || ""} ${countryName(player)}`.toLowerCase();
 }
 
+function comparePlayersByTournamentRank(playerA, playerB) {
+  const seedA = Number.isFinite(playerA.seed) ? playerA.seed : Number.MAX_SAFE_INTEGER;
+  const seedB = Number.isFinite(playerB.seed) ? playerB.seed : Number.MAX_SAFE_INTEGER;
+  if (seedA !== seedB) return seedA - seedB;
+  return playerA.name.localeCompare(playerB.name);
+}
+
 function renderPlayers() {
   const search = state.search.trim().toLowerCase();
-  const visiblePlayers = currentPlayers().filter(player => {
-    const matchesDraw = player.draw === state.draw;
-    const matchesSearch = !search || playerSearchText(player).includes(search);
-    return matchesDraw && matchesSearch;
-  });
+  const visiblePlayers = currentPlayers()
+    .filter(player => {
+      const matchesDraw = player.draw === state.draw;
+      const matchesSearch = !search || playerSearchText(player).includes(search);
+      return matchesDraw && matchesSearch;
+    })
+    .sort(comparePlayersByTournamentRank);
 
   els.playersTitle.textContent = `${state.year} favorites`;
 
