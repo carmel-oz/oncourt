@@ -1,122 +1,3 @@
-const players2026 = [
-  { id: "alcaraz", draw: "men", name: "Carlos Alcaraz", country: "Spain", code: "ES", seed: 1 },
-  { id: "sinner", draw: "men", name: "Jannik Sinner", country: "Italy", code: "IT", seed: 2 },
-  { id: "djokovic", draw: "men", name: "Novak Djokovic", country: "Serbia", code: "RS", seed: 3 },
-  { id: "zverev", draw: "men", name: "Alexander Zverev", country: "Germany", code: "DE", seed: 4 },
-  { id: "medvedev", draw: "men", name: "Daniil Medvedev", country: "Neutral", code: "UN", seed: 5 },
-  { id: "ruud", draw: "men", name: "Casper Ruud", country: "Norway", code: "NO", seed: 6 },
-  { id: "rublev", draw: "men", name: "Andrey Rublev", country: "Neutral", code: "UN", seed: 7 },
-  { id: "fritz", draw: "men", name: "Taylor Fritz", country: "United States", code: "US", seed: 8 },
-  { id: "swiatek", draw: "women", name: "Iga Swiatek", country: "Poland", code: "PL", seed: 1 },
-  { id: "sabalenka", draw: "women", name: "Aryna Sabalenka", country: "Neutral", code: "UN", seed: 2 },
-  { id: "gauff", draw: "women", name: "Coco Gauff", country: "United States", code: "US", seed: 3 },
-  { id: "rybakina", draw: "women", name: "Elena Rybakina", country: "Kazakhstan", code: "KZ", seed: 4 },
-  { id: "pegula", draw: "women", name: "Jessica Pegula", country: "United States", code: "US", seed: 5 },
-  { id: "jabeur", draw: "women", name: "Ons Jabeur", country: "Tunisia", code: "TN", seed: 6 },
-  { id: "paolini", draw: "women", name: "Jasmine Paolini", country: "Italy", code: "IT", seed: 7 },
-  { id: "sakkari", draw: "women", name: "Maria Sakkari", country: "Greece", code: "GR", seed: 8 }
-];
-
-const matches2026 = [
-  {
-    id: "m1",
-    draw: "women",
-    status: "live",
-    round: "R2",
-    court: "Court Philippe-Chatrier",
-    time: "Live now",
-    playerA: "swiatek",
-    playerB: "jabeur",
-    scoreA: "6 3 2",
-    scoreB: "4 6 1",
-    server: "swiatek"
-  },
-  {
-    id: "m2",
-    draw: "men",
-    status: "future",
-    round: "R2",
-    court: "Court Suzanne-Lenglen",
-    time: "Today, 16:30",
-    playerA: "alcaraz",
-    playerB: "ruud",
-    scoreA: "",
-    scoreB: ""
-  },
-  {
-    id: "m3",
-    draw: "men",
-    status: "future",
-    round: "R2",
-    court: "Court Simonne-Mathieu",
-    time: "Tomorrow, 12:00",
-    playerA: "sinner",
-    playerB: "fritz",
-    scoreA: "",
-    scoreB: ""
-  },
-  {
-    id: "m4",
-    draw: "women",
-    status: "future",
-    round: "R2",
-    court: "Court 14",
-    time: "Tomorrow, 14:00",
-    playerA: "gauff",
-    playerB: "paolini",
-    scoreA: "",
-    scoreB: ""
-  },
-  {
-    id: "m5",
-    draw: "men",
-    status: "past",
-    round: "R1",
-    court: "Court Philippe-Chatrier",
-    time: "Completed",
-    playerA: "djokovic",
-    playerB: "zverev",
-    scoreA: "6 7 6",
-    scoreB: "4 5 3"
-  },
-  {
-    id: "m6",
-    draw: "women",
-    status: "past",
-    round: "R1",
-    court: "Court Suzanne-Lenglen",
-    time: "Completed",
-    playerA: "sabalenka",
-    playerB: "rybakina",
-    scoreA: "4 6 6",
-    scoreB: "6 3 4"
-  },
-  {
-    id: "m7",
-    draw: "women",
-    status: "future",
-    round: "R2",
-    court: "Court 7",
-    time: "Friday, 11:00",
-    playerA: "pegula",
-    playerB: "sakkari",
-    scoreA: "",
-    scoreB: ""
-  },
-  {
-    id: "m8",
-    draw: "men",
-    status: "future",
-    round: "R2",
-    court: "Court 6",
-    time: "Friday, 13:00",
-    playerA: "medvedev",
-    playerB: "rublev",
-    scoreA: "",
-    scoreB: ""
-  }
-];
-
 const tournaments = {
   2025: {
     label: "Roland-Garros 2025",
@@ -126,9 +7,9 @@ const tournaments = {
   },
   2026: {
     label: "Roland-Garros 2026",
-    realData: false,
-    players: players2026,
-    matches: matches2026
+    realData: true,
+    players: (window.RG_2026_DATA && window.RG_2026_DATA.players) || [],
+    matches: (window.RG_2026_DATA && window.RG_2026_DATA.matches) || []
   }
 };
 
@@ -157,16 +38,22 @@ const countryNames = {
   GEO: "Georgia",
   GER: "Germany",
   GRE: "Greece",
+  HKG: "Hong Kong",
   HUN: "Hungary",
+  INA: "Indonesia",
   ITA: "Italy",
   JPN: "Japan",
   KAZ: "Kazakhstan",
   LAT: "Latvia",
   LBN: "Lebanon",
   MEX: "Mexico",
+  MNE: "Montenegro",
+  MON: "Monaco",
   NED: "Netherlands",
   NOR: "Norway",
   NZL: "New Zealand",
+  PAR: "Paraguay",
+  PER: "Peru",
   PHI: "Philippines",
   POL: "Poland",
   POR: "Portugal",
@@ -174,12 +61,14 @@ const countryNames = {
   RSA: "South Africa",
   SRB: "Serbia",
   SUI: "Switzerland",
+  SLO: "Slovenia",
   SVK: "Slovakia",
   TPE: "Chinese Taipei",
   TUN: "Tunisia",
   TUR: "Turkey",
   UKR: "Ukraine",
-  USA: "United States"
+  USA: "United States",
+  UZB: "Uzbekistan"
 };
 
 const state = {
@@ -250,6 +139,15 @@ function isFollowedMatch(match) {
 
 function saveFollows() {
   localStorage.setItem(`oncourt-followed-${state.year}`, JSON.stringify([...state.followed]));
+}
+
+function pruneFollows() {
+  const validPlayerIds = new Set(currentPlayers().map(player => player.id));
+  const before = state.followed.size;
+  state.followed = new Set([...state.followed].filter(playerId => validPlayerIds.has(playerId)));
+  if (state.followed.size !== before) {
+    saveFollows();
+  }
 }
 
 function playerSub(player) {
@@ -488,6 +386,7 @@ function renderBriefing() {
 }
 
 function render() {
+  pruneFollows();
   renderPlayers();
   renderMatches();
   renderBriefing();
