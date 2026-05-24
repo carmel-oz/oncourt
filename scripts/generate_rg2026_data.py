@@ -79,6 +79,76 @@ def clean_name(tokens):
     return " ".join(token for token in tokens if strip_entry(token) and not is_seed(token)).strip()
 
 
+def scoreish(token):
+    return bool(re.fullmatch(r"(?:\d+|R\.|RET\.|w/o\.|W/O)", token))
+
+
+def score_tokens(score):
+    return [token.replace(".", "") for token in score.split() if token]
+
+
+def parse_score_sets(score_a, score_b):
+    a_tokens = score_tokens(score_a)
+    b_tokens = score_tokens(score_b)
+    a_scores = [int(token) for token in a_tokens if token.isdigit()]
+    b_scores = [int(token) for token in b_tokens if token.isdigit()]
+    sets = []
+    index = 0
+
+    while index < len(a_scores) and index < len(b_scores):
+        a_score = a_scores[index]
+        b_score = b_scores[index]
+        next_a = a_scores[index + 1] if index + 1 < len(a_scores) else None
+        next_b = b_scores[index + 1] if index + 1 < len(b_scores) else None
+        is_tiebreak_set = (a_score == 7 and b_score == 6) or (a_score == 6 and b_score == 7)
+        has_tiebreak_pair = next_a is not None and next_b is not None and max(next_a, next_b) >= 7
+        sets.append((a_score, b_score))
+        index += 2 if is_tiebreak_set and has_tiebreak_pair else 1
+
+    a_sets = sum(1 for a_score, b_score in sets if a_score > b_score)
+    b_sets = sum(1 for a_score, b_score in sets if b_score > a_score)
+    return a_sets, b_sets
+
+
+def parse_score_body(body):
+    duration = None
+    duration_match = re.match(r"(?P<duration>\d+h\d{2}|w/o\.)\s+(?P<body>.+)", body, flags=re.I)
+    if duration_match:
+        duration = duration_match.group("duration")
+        body = duration_match.group("body")
+
+    body_tokens = body.split()
+    first_score = next((idx for idx, token in enumerate(body_tokens) if scoreish(token)), None)
+    if first_score is None:
+        return body, "", "", duration
+
+    player_a_tokens = body_tokens[:first_score]
+    rest = body_tokens[first_score:]
+    player_b_start = next((idx for idx, token in enumerate(rest) if not scoreish(token)), None)
+    if player_b_start is None:
+        return body, "", "", duration
+
+    score_a = rest[:player_b_start]
+    rest_b = rest[player_b_start:]
+    score_b_start = next((idx for idx, token in enumerate(rest_b) if scoreish(token)), len(rest_b))
+    player_b_tokens = rest_b[:score_b_start]
+    score_b = rest_b[score_b_start:]
+    return " ".join(player_a_tokens + player_b_tokens), " ".join(score_a), " ".join(score_b), duration
+
+
+def match_status(draw, score_a, score_b, duration=None):
+    if duration and duration.lower() == "w/o.":
+        return "past"
+    if not score_a and not score_b:
+        return "future"
+    if any(token.upper() in {"R", "RET", "W/O"} for token in score_tokens(f"{score_a} {score_b}")):
+        return "past"
+
+    a_sets, b_sets = parse_score_sets(score_a, score_b)
+    needed_sets = 3 if draw == "SM" else 2
+    return "past" if max(a_sets, b_sets) >= needed_sets else "live"
+
+
 def split_players(body):
     tokens = body.split()
     candidates = []
@@ -151,7 +221,9 @@ def fetch_match_players(href, fallback_flags):
 def parse_match(item, draw):
     match_id = item["href"].rstrip("/").split("/")[-1]
     court, body = extract_court_and_body(item["line"])
-    player_a_tokens, player_b_tokens = split_players(body)
+    player_body, score_a, score_b, duration = parse_score_body(body)
+    status = match_status(draw, score_a, score_b, duration)
+    player_a_tokens, player_b_tokens = split_players(player_body)
     match_players = fetch_match_players(item["href"], item["flags"])
     player_a = match_players[0]["name"] or clean_name(player_a_tokens)
     player_b = match_players[1]["name"] or clean_name(player_b_tokens)
@@ -168,10 +240,11 @@ def parse_match(item, draw):
         "id": match_id,
         "year": 2026,
         "draw": DRAW_LABELS[draw],
-        "status": "future",
+        "status": status,
         "round": "First Round",
         "court": court,
-        "time": "Schedule TBD",
+        "time": "Completed" if status == "past" else "Live now" if status == "live" else "Schedule TBD",
+        "duration": duration,
         "playerA": f"{DRAW_LABELS[draw]}:{player_a_id}",
         "playerB": f"{DRAW_LABELS[draw]}:{player_b_id}",
         "playerAName": player_a,
@@ -180,8 +253,8 @@ def parse_match(item, draw):
         "playerBCode": code_b,
         "playerASeed": parse_seed(player_a_tokens),
         "playerBSeed": parse_seed(player_b_tokens),
-        "scoreA": "",
-        "scoreB": "",
+        "scoreA": score_a,
+        "scoreB": score_b,
         "sourceLine": item["line"],
         "sourceUrl": f"https://www.rolandgarros.com{item['href']}",
     }
