@@ -76,6 +76,7 @@ const state = {
   draw: "men",
   matchFilter: "all",
   search: "",
+  mobileView: "feed",
   followed: loadFollows("2026")
 };
 
@@ -94,7 +95,9 @@ const els = {
   feedTitle: document.querySelector("#feedTitle"),
   playerList: document.querySelector("#playerList"),
   matchList: document.querySelector("#matchList"),
-  clearFollows: document.querySelector("#clearFollows")
+  clearFollows: document.querySelector("#clearFollows"),
+  layout: document.querySelector(".layout"),
+  controls: document.querySelector(".controls")
 };
 
 function loadFollows(year) {
@@ -181,6 +184,17 @@ function isFollowedMatch(match) {
 
 function saveFollows() {
   localStorage.setItem(`oncourt-followed-${state.year}`, JSON.stringify([...state.followed]));
+}
+
+function setMobileView(view) {
+  state.mobileView = view;
+  els.layout.dataset.mobileView = view;
+  els.controls.dataset.mobileView = view;
+  document.querySelectorAll(".mobile-view-tab").forEach(button => {
+    const active = button.dataset.mobileView === view;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-selected", String(active));
+  });
 }
 
 function pruneFollows() {
@@ -346,7 +360,10 @@ function renderMatches() {
     const emptyText = state.followed.size
       ? "No matches in this view yet. Try another tab or follow more players."
       : "No favorites selected yet. Pick players from the list to build your personal match feed.";
-    els.matchList.innerHTML = `<div class="empty-state">${emptyText}</div>`;
+    const chooseButton = state.followed.size
+      ? ""
+      : `<button class="empty-action" type="button" data-mobile-view="players">Choose players</button>`;
+    els.matchList.innerHTML = `<div class="empty-state">${emptyText}${chooseButton}</div>`;
     return;
   }
 
@@ -469,6 +486,12 @@ document.querySelectorAll(".feed-tab").forEach(button => {
   });
 });
 
+document.querySelectorAll(".mobile-view-tab").forEach(button => {
+  button.addEventListener("click", () => {
+    setMobileView(button.dataset.mobileView);
+  });
+});
+
 els.playerSearch.addEventListener("input", event => {
   state.search = event.target.value;
   renderPlayers();
@@ -489,12 +512,19 @@ els.playerList.addEventListener("click", event => {
   render();
 });
 
+els.matchList.addEventListener("click", event => {
+  const button = event.target.closest("[data-mobile-view]");
+  if (!button) return;
+  setMobileView(button.dataset.mobileView);
+});
+
 els.clearFollows.addEventListener("click", () => {
   state.followed.clear();
   saveFollows();
   render();
 });
 
+setMobileView(state.mobileView);
 render();
 refreshLiveMatches();
 setInterval(refreshLiveMatches, 15000);
