@@ -109,6 +109,44 @@ function currentMatches() {
   return currentTournament().matches;
 }
 
+function mergeLiveMatches(liveMatches) {
+  const matchesById = new Map(tournaments[2026].matches.map(match => [match.id, match]));
+  liveMatches.forEach(liveMatch => {
+    const existing = matchesById.get(liveMatch.id);
+    if (!existing) return;
+
+    Object.assign(existing, {
+      status: liveMatch.status,
+      round: liveMatch.round || existing.round,
+      court: liveMatch.court || existing.court,
+      time: liveMatch.time || existing.time,
+      duration: liveMatch.duration || "",
+      scoreA: liveMatch.scoreA || "",
+      scoreB: liveMatch.scoreB || ""
+    });
+  });
+}
+
+async function refreshLiveMatches() {
+  if (!tournaments[2026].matches.length) return;
+
+  try {
+    const response = await fetch(`/.netlify/functions/rg-live?ts=${Date.now()}`, { cache: "no-store" });
+    if (!response.ok) return;
+
+    const data = await response.json();
+    if (!Array.isArray(data.matches)) return;
+
+    mergeLiveMatches(data.matches);
+    if (state.year === "2026") {
+      renderMatches();
+      renderBriefing();
+    }
+  } catch (error) {
+    // Local static servers do not provide Netlify functions. Keep the static draw usable.
+  }
+}
+
 function playerIdForMatch(match, side) {
   const value = match[`player${side}`];
   if (String(state.year) === "2025") {
@@ -446,3 +484,5 @@ els.clearFollows.addEventListener("click", () => {
 });
 
 render();
+refreshLiveMatches();
+setInterval(refreshLiveMatches, 60000);
