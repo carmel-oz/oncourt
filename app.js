@@ -278,9 +278,17 @@ function parseScoreSets(match) {
     sets.push(set);
   }
 
-  const aSetsWon = sets.filter(set => set.a > set.b).length;
-  const bSetsWon = sets.filter(set => set.b > set.a).length;
-  const matchWinner = aSetsWon > bSetsWon ? "a" : bSetsWon > aSetsWon ? "b" : null;
+  const completedSets = sets.filter(set => {
+    const isTiebreakSet = (set.a === 7 && set.b === 6) || (set.a === 6 && set.b === 7);
+    const isStandardSet = Math.max(set.a, set.b) >= 6 && Math.abs(set.a - set.b) >= 2;
+    return isTiebreakSet || isStandardSet;
+  });
+  const aSetsWon = completedSets.filter(set => set.a > set.b).length;
+  const bSetsWon = completedSets.filter(set => set.b > set.a).length;
+  const neededSets = match.draw === "men" ? 3 : 2;
+  const matchWinner = match.status === "past" && Math.max(aSetsWon, bSetsWon) >= neededSets
+    ? aSetsWon > bSetsWon ? "a" : "b"
+    : null;
 
   return { sets, aStatus, bStatus, aSetsWon, bSetsWon, matchWinner };
 }
