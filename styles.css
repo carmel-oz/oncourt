@@ -204,7 +204,8 @@ h3 {
 }
 
 .segmented,
-.feed-tabs {
+.feed-tabs,
+.mobile-view-tabs {
   background: #0f1416;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -214,6 +215,7 @@ h3 {
 
 .segment,
 .feed-tab,
+.mobile-view-tab,
 .text-button {
   border: 0;
   background: transparent;
@@ -222,16 +224,22 @@ h3 {
 }
 
 .segment,
-.feed-tab {
+.feed-tab,
+.mobile-view-tab {
   min-height: 36px;
   padding: 0 13px;
 }
 
 .segment.active,
-.feed-tab.active {
+.feed-tab.active,
+.mobile-view-tab.active {
   background: var(--clay);
   color: var(--ink);
   box-shadow: 0 8px 22px rgba(216, 111, 69, 0.2);
+}
+
+.mobile-view-tabs {
+  display: none;
 }
 
 .layout {
@@ -614,6 +622,18 @@ h3 {
   text-align: center;
 }
 
+.empty-action {
+  background: var(--clay);
+  border: 0;
+  border-radius: 6px;
+  color: var(--ink);
+  display: block;
+  font-weight: 800;
+  margin: 16px auto 0;
+  min-height: 38px;
+  padding: 0 14px;
+}
+
 .site-footer {
   border-top: 1px solid var(--line);
   color: var(--muted);
@@ -657,6 +677,27 @@ h3 {
 
   .layout {
     grid-template-columns: 1fr;
+  }
+
+  .mobile-view-tabs {
+    display: flex;
+    margin: 18px 0;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+  }
+
+  .mobile-view-tab {
+    flex: 1;
+  }
+
+  .controls[data-mobile-view="feed"] {
+    display: none;
+  }
+
+  .layout[data-mobile-view="feed"] .player-panel,
+  .layout[data-mobile-view="players"] .feed-panel {
+    display: none;
   }
 
   .search-box {
