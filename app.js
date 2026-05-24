@@ -79,6 +79,10 @@ const state = {
   followed: loadFollows("2026")
 };
 
+const LIVE_SCORE_ENDPOINT = location.hostname === "localhost" || location.hostname === "127.0.0.1"
+  ? "https://on-court.netlify.app/.netlify/functions/rg-live"
+  : "/.netlify/functions/rg-live";
+
 const els = {
   followSummary: document.querySelector("#followSummary"),
   briefingTitle: document.querySelector("#briefingTitle"),
@@ -131,7 +135,7 @@ async function refreshLiveMatches() {
   if (!tournaments[2026].matches.length) return;
 
   try {
-    const response = await fetch(`/.netlify/functions/rg-live?ts=${Date.now()}`, { cache: "no-store" });
+    const response = await fetch(`${LIVE_SCORE_ENDPOINT}?ts=${Date.now()}`, { cache: "no-store" });
     if (!response.ok) return;
 
     const data = await response.json();
@@ -493,4 +497,4 @@ els.clearFollows.addEventListener("click", () => {
 
 render();
 refreshLiveMatches();
-setInterval(refreshLiveMatches, 60000);
+setInterval(refreshLiveMatches, 15000);

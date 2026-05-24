@@ -177,14 +177,17 @@ async function fetchDraw(draw) {
 }
 
 exports.handler = async () => {
+  const headers = {
+    "content-type": "application/json",
+    "cache-control": "no-store, max-age=0",
+    "access-control-allow-origin": "*"
+  };
+
   try {
     const matches = (await Promise.all(["SM", "SD"].map(fetchDraw))).flat();
     return {
       statusCode: 200,
-      headers: {
-        "content-type": "application/json",
-        "cache-control": "public, max-age=30"
-      },
+      headers,
       body: JSON.stringify({
         source: `${HOST}/en-us/results`,
         updatedAt: new Date().toISOString(),
@@ -194,7 +197,7 @@ exports.handler = async () => {
   } catch (error) {
     return {
       statusCode: 502,
-      headers: { "content-type": "application/json" },
+      headers,
       body: JSON.stringify({ error: error.message })
     };
   }
