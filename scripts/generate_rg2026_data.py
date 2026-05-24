@@ -105,8 +105,14 @@ def parse_score_sets(score_a, score_b):
         sets.append((a_score, b_score))
         index += 2 if is_tiebreak_set and has_tiebreak_pair else 1
 
-    a_sets = sum(1 for a_score, b_score in sets if a_score > b_score)
-    b_sets = sum(1 for a_score, b_score in sets if b_score > a_score)
+    completed_sets = [
+        (a_score, b_score)
+        for a_score, b_score in sets
+        if ((a_score == 7 and b_score == 6) or (a_score == 6 and b_score == 7))
+        or (max(a_score, b_score) >= 6 and abs(a_score - b_score) >= 2)
+    ]
+    a_sets = sum(1 for a_score, b_score in completed_sets if a_score > b_score)
+    b_sets = sum(1 for a_score, b_score in completed_sets if b_score > a_score)
     return a_sets, b_sets
 
 

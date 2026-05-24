@@ -52,9 +52,15 @@ function parseScoreSets(scoreA, scoreB) {
     index += isTiebreakSet && hasTiebreakPair ? 2 : 1;
   }
 
+  const completedSets = sets.filter(set => {
+    const isTiebreakSet = (set.a === 7 && set.b === 6) || (set.a === 6 && set.b === 7);
+    const isStandardSet = Math.max(set.a, set.b) >= 6 && Math.abs(set.a - set.b) >= 2;
+    return isTiebreakSet || isStandardSet;
+  });
+
   return {
-    aSets: sets.filter(set => set.a > set.b).length,
-    bSets: sets.filter(set => set.b > set.a).length
+    aSets: completedSets.filter(set => set.a > set.b).length,
+    bSets: completedSets.filter(set => set.b > set.a).length
   };
 }
 
