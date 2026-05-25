@@ -83,6 +83,7 @@ const state = {
 const LIVE_SCORE_ENDPOINT = location.hostname === "localhost" || location.hostname === "127.0.0.1"
   ? "https://on-court.netlify.app/.netlify/functions/rg-live"
   : "/.netlify/functions/rg-live";
+const mobileQuery = window.matchMedia("(max-width: 860px)");
 
 const els = {
   followSummary: document.querySelector("#followSummary"),
@@ -188,13 +189,17 @@ function saveFollows() {
 
 function setMobileView(view) {
   state.mobileView = view;
-  els.layout.dataset.mobileView = view;
-  els.controls.dataset.mobileView = view;
+  els.layout.dataset.mobileView = mobileQuery.matches ? view : "desktop";
+  els.controls.dataset.mobileView = mobileQuery.matches ? view : "desktop";
   document.querySelectorAll(".mobile-view-tab").forEach(button => {
     const active = button.dataset.mobileView === view;
     button.classList.toggle("active", active);
     button.setAttribute("aria-selected", String(active));
   });
+}
+
+function syncMobileLayout() {
+  setMobileView(state.mobileView);
 }
 
 function pruneFollows() {
@@ -492,6 +497,8 @@ document.querySelectorAll(".mobile-view-tab").forEach(button => {
   });
 });
 
+mobileQuery.addEventListener("change", syncMobileLayout);
+
 els.playerSearch.addEventListener("input", event => {
   state.search = event.target.value;
   renderPlayers();
@@ -524,7 +531,7 @@ els.clearFollows.addEventListener("click", () => {
   render();
 });
 
-setMobileView(state.mobileView);
+syncMobileLayout();
 render();
 refreshLiveMatches();
 setInterval(refreshLiveMatches, 15000);

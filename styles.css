@@ -239,7 +239,7 @@ h3 {
 }
 
 .mobile-view-tabs {
-  display: none;
+  display: none !important;
 }
 
 .layout {
@@ -680,7 +680,7 @@ h3 {
   }
 
   .mobile-view-tabs {
-    display: flex;
+    display: flex !important;
     margin: 18px 0;
     position: sticky;
     top: 0;
