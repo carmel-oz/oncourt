@@ -245,6 +245,10 @@ function isFollowedMatch(match) {
   return state.followed.has(playerIdForMatch(match, "A")) || state.followed.has(playerIdForMatch(match, "B"));
 }
 
+function isActiveDrawMatch(match) {
+  return match.draw === state.draw;
+}
+
 function saveFollows() {
   localStorage.setItem(`oncourt-followed-${state.year}`, JSON.stringify([...state.followed]));
 }
@@ -415,19 +419,20 @@ function renderScoreGrid(match) {
 }
 
 function renderMatches() {
-  const allMatches = currentMatches();
+  const allMatches = currentMatches().filter(isActiveDrawMatch);
   const followedMatches = allMatches.filter(isFollowedMatch);
-  const visibleMatches = state.followed.size
+  const followedPlayers = currentPlayers().filter(player => player.draw === state.draw && state.followed.has(player.id));
+  const visibleMatches = followedPlayers.length
     ? followedMatches.filter(match => state.matchFilter === "all" || match.status === state.matchFilter)
     : [];
 
   els.feedTitle.textContent = `${currentTournament().label} matches`;
 
   if (!visibleMatches.length) {
-    const emptyText = state.followed.size
+    const emptyText = followedPlayers.length
       ? "No matches in this view yet. Try another tab or follow more players."
-      : "No favorites selected yet. Pick players from the list to build your personal match feed.";
-    const chooseButton = state.followed.size
+      : `No ${state.draw === "women" ? "women" : "men"} favorites selected yet. Pick players from this list to build your personal match feed.`;
+    const chooseButton = followedPlayers.length
       ? ""
       : `<button class="empty-action" type="button" data-mobile-view="players">Choose players</button>`;
     els.matchList.innerHTML = `<div class="empty-state">${emptyText}${chooseButton}</div>`;
@@ -468,13 +473,13 @@ function renderMatches() {
 }
 
 function renderBriefing() {
-  const allMatches = currentMatches();
-  const followedPlayers = currentPlayers().filter(player => state.followed.has(player.id));
+  const allMatches = currentMatches().filter(isActiveDrawMatch);
+  const followedPlayers = currentPlayers().filter(player => player.draw === state.draw && state.followed.has(player.id));
   const liveCount = allMatches.filter(match => match.status === "live" && isFollowedMatch(match)).length;
   const nextMatches = allMatches.filter(match => match.status === "future" && isFollowedMatch(match));
   const pastCount = allMatches.filter(match => match.status === "past" && isFollowedMatch(match)).length;
 
-  els.followSummary.textContent = `${state.followed.size} followed`;
+  els.followSummary.textContent = `${followedPlayers.length} ${state.draw === "women" ? "women" : "men"} followed`;
 
   if (String(state.year) === "2025") {
     els.briefingTitle.textContent = "2025 tournament archive";
@@ -541,7 +546,7 @@ document.querySelectorAll(".segment").forEach(button => {
   button.addEventListener("click", () => {
     state.draw = button.dataset.draw;
     document.querySelectorAll(".segment").forEach(item => item.classList.toggle("active", item === button));
-    renderPlayers();
+    render();
   });
 });
 
