@@ -117,11 +117,73 @@ function currentMatches() {
   return currentTournament().matches;
 }
 
+function liveNameKey(name) {
+  return String(name || "")
+    .toLowerCase()
+    .replace(/[^a-z]/g, "");
+}
+
+function abbreviatedName(name) {
+  const parts = String(name || "").trim().split(/\s+/);
+  if (parts.length < 2) return name;
+
+  const lastName = parts[parts.length - 1];
+  const initials = parts
+    .slice(0, -1)
+    .flatMap(part => part.split("-"))
+    .map(part => part[0] || "")
+    .join("");
+  return `${initials}.${lastName}`;
+}
+
+function liveNameVariants(name) {
+  const parts = String(name || "").trim().split(/\s+/);
+  if (parts.length < 2) return [liveNameKey(name)];
+
+  const firstInitial = parts[0][0] || "";
+  const lastName = parts[parts.length - 1];
+  const remainingNames = parts.slice(1).join("");
+  const allInitials = parts
+    .slice(0, -1)
+    .flatMap(part => part.split("-"))
+    .map(part => part[0] || "")
+    .join("");
+
+  return [
+    liveNameKey(name),
+    liveNameKey(`${firstInitial}.${remainingNames}`),
+    liveNameKey(`${allInitials}.${lastName}`),
+    liveNameKey(abbreviatedName(name))
+  ];
+}
+
+function findPlayerByLiveName(draw, name) {
+  const target = liveNameKey(name);
+  return tournaments[2026].players.find(player => {
+    if (player.draw !== draw) return false;
+    return liveNameVariants(player.name).includes(target);
+  });
+}
+
 function mergeLiveMatches(liveMatches) {
   const matchesById = new Map(tournaments[2026].matches.map(match => [match.id, match]));
   liveMatches.forEach(liveMatch => {
     const existing = matchesById.get(liveMatch.id);
-    if (!existing) return;
+    if (!existing) {
+      const playerA = findPlayerByLiveName(liveMatch.draw, liveMatch.playerAName);
+      const playerB = findPlayerByLiveName(liveMatch.draw, liveMatch.playerBName);
+      if (!playerA || !playerB) return;
+
+      const match = {
+        ...liveMatch,
+        year: 2026,
+        playerA: playerA.id,
+        playerB: playerB.id
+      };
+      tournaments[2026].matches.push(match);
+      matchesById.set(match.id, match);
+      return;
+    }
 
     Object.assign(existing, {
       status: liveMatch.status,

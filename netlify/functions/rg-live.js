@@ -3,6 +3,15 @@ const DRAW_LABELS = {
   SM: "men",
   SD: "women"
 };
+const ROUND_LABELS = {
+  first: "First Round",
+  second: "Second Round",
+  third: "Third Round",
+  fourth: "Fourth Round",
+  quarterfinals: "Quarterfinals",
+  semifinals: "Semifinals",
+  final: "Final"
+};
 
 function stripTags(html) {
   return html
@@ -78,6 +87,11 @@ function matchStatus(draw, scoreA, scoreB, duration = "") {
 
 function splitPlayers(body) {
   const tokens = body.split(/\s+/).filter(Boolean);
+  const nextPlayerIndex = tokens.findIndex((token, index) => index > 0 && /^[A-Z]{1,3}\./.test(token));
+  if (nextPlayerIndex > 0) {
+    return [tokens.slice(0, nextPlayerIndex), tokens.slice(nextPlayerIndex)];
+  }
+
   const candidates = [];
 
   for (let idx = 1; idx < tokens.length; idx += 1) {
@@ -135,11 +149,13 @@ function parseScoreBody(body) {
 function parseMatch(draw, href, cardHtml) {
   const id = href.split("/").pop();
   const text = stripTags(cardHtml);
-  const firstRound = text.match(/(?:(.+?)\s+-\s+)?first round\s+(.+)/i);
-  if (!firstRound) return null;
+  const roundMatch = text.match(/(?:(.+?)\s+-\s+)?(first|second|third|fourth) round\s+(.+)/i)
+    || text.match(/(?:(.+?)\s+-\s+)?(quarterfinals|semifinals|final)\s+(.+)/i);
+  if (!roundMatch) return null;
 
-  const court = (firstRound[1] || "Court TBD").trim();
-  const { playerBody, scoreA, scoreB, duration } = parseScoreBody(firstRound[2].trim());
+  const court = (roundMatch[1] || "Court TBD").trim();
+  const roundKey = roundMatch[2].toLowerCase();
+  const { playerBody, scoreA, scoreB, duration } = parseScoreBody(roundMatch[3].trim());
   const [playerATokens, playerBTokens] = splitPlayers(playerBody);
   const status = matchStatus(draw, scoreA, scoreB, duration);
 
@@ -147,7 +163,7 @@ function parseMatch(draw, href, cardHtml) {
     id,
     draw: DRAW_LABELS[draw],
     status,
-    round: "First Round",
+    round: ROUND_LABELS[roundKey] || `${roundMatch[2]} Round`,
     court,
     time: status === "past" ? "Completed" : status === "live" ? "Live now" : "Schedule TBD",
     duration,
@@ -158,11 +174,11 @@ function parseMatch(draw, href, cardHtml) {
   };
 }
 
-async function fetchDraw(draw) {
-  const response = await fetch(`${HOST}/en-us/results/${draw}?round=1&year=2026`, {
+async function fetchDrawRound(draw, round) {
+  const response = await fetch(`${HOST}/en-us/results/${draw}?round=${round}&year=2026`, {
     headers: { "user-agent": "OnCourt live score refresh" }
   });
-  if (!response.ok) throw new Error(`Roland-Garros ${draw} returned ${response.status}`);
+  if (!response.ok) throw new Error(`Roland-Garros ${draw} round ${round} returned ${response.status}`);
 
   const html = await response.text();
   const matches = [];
@@ -174,6 +190,13 @@ async function fetchDraw(draw) {
     if (parsed) matches.push(parsed);
   }
   return matches;
+}
+
+async function fetchDraw(draw) {
+  const rounds = await Promise.all([1, 2, 3, 4, 5, 6, 7].map(round => fetchDrawRound(draw, round)));
+  const matchesById = new Map();
+  rounds.flat().forEach(match => matchesById.set(match.id, match));
+  return [...matchesById.values()];
 }
 
 exports.handler = async () => {
